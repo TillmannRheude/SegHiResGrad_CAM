@@ -20,7 +20,6 @@
   
   <p align="center">
     <br />
-    <br />
     <a href="https://github.com/">Paper</a>
     ·
     <a href="https://github.com/">Demo</a>
