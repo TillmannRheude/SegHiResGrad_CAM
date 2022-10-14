@@ -49,8 +49,10 @@ Please structure the data and model as the folders in this repository, e.g. as f
 The convolutional neural network model has to be adjusted (if it is not the U-Net which is in this repository) such that it can be used out of the box with the ```main.py``` in this repository, e.g. as the following minimal example:
 ```bash
 class Vanilla_UNet_2d(nn.Module):
-    def __init__(self):
+    def __init__(self, grad_cam=False):
         super(Vanilla_UNet_2d, self).__init__()
+        
+        self.grad_cam = grad_cam # activate this for .eval() the model 
         
     def activations_hook(self, grad): 
         # for GradCam
@@ -63,7 +65,7 @@ class Vanilla_UNet_2d(nn.Module):
         
         # i want the explanation of this layer
         # for GradCam
-        self.h = x.register_hook(self.activations_hook)
+        if self.grad_cam: self.h = x.register_hook(self.activations_hook)
         
         # decoder
     
