@@ -4,7 +4,7 @@
     <img src="readme_images/IGD.png" alt="Logo" width="300" height="124">
   </a>
   <a href="https://github.com">
-    <img src="readme_images/TUDA.png" alt="Logo" width="80" height="80">
+    <img src="readme_images/TUDA.png" alt="Logo" width="300" height="124">
   </a>
 
   <h3 align="center">Seg-HiRes-Grad CAM</h3>
