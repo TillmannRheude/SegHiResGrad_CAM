@@ -46,6 +46,36 @@ Please structure the data and model as the folders in this repository, e.g. as f
           ├──...
 ``` 
 
+The convolutional neural network model has to be adjusted (if it is not the U-Net which is in this repository) such that it can be used out of the box with the ```main.py``` in this repository, e.g. as the following minimal example:
+```bash
+class Vanilla_UNet_2d(nn.Module):
+    def __init__(self):
+        super(Vanilla_UNet_2d, self).__init__()
+        
+    def activations_hook(self, grad): 
+        # for GradCam
+        self.gradients = grad
+    
+    def forward(self, x):
+        # do something
+        return x
+    
+    def get_act_grad(self):
+        # for GradCam
+        return self.gradients
+    
+    def get_act(self, x):
+        # for GradCam
+        for block in self.encoder:
+            # send the tensor to the encoder block and get the encoded tensor before and after the max pooling operation
+            x_pre_pool, x_post_pool = block(x)
+            # save the encoded tensor before the max pooling operation for the skip connection part later
+            x = x_post_pool
+        x = x_pre_pool
+
+        return x 
+``` 
+
 
 # Citation
 Please cite the work with the following information (bibtex format):
