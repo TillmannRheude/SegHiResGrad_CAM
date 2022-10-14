@@ -17,8 +17,6 @@
   <p align="center">
     <br />
     <a href="https://github.com/">Paper</a>
-    ·
-    <a href="https://github.com/">Demo</a>
   </p>
   
   <a href="https://github.com">
@@ -93,6 +91,7 @@ class Vanilla_UNet_2d(nn.Module):
         return x 
 ``` 
 
+To run Seg(-HiRes)-Grad CAM, the ```main.py``` file provides the relevant arguments. 
 
 # Citation
 Please cite the work with the following information (bibtex format):
