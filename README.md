@@ -6,6 +6,30 @@
 </p>
 
 
+<br />
+<div align="center">
+  <a href="https://github.com">
+    <img src="readme_images/IGD.png" alt="Logo" width="80" height="80">
+  </a>
+  <a href="https://github.com">
+    <img src="readme_images/TUDA.png" alt="Logo" width="80" height="80">
+  </a>
+
+  <h3 align="center">Seg-HiRes-Grad CAM</h3>
+
+  <p align="center">
+    Abstract
+    <br />
+    <br />
+    <a href="https://github.com/">View Demo</a>
+    ·
+    <a href="https://github.com/">Report Bug</a>
+    ·
+    <a href="https://github.com/">Request Feature</a>
+  </p>
+</div>
+
+
 # Abstract
 ....
 
