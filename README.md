@@ -58,6 +58,15 @@ class Vanilla_UNet_2d(nn.Module):
     
     def forward(self, x):
         # do something
+        
+        # encoder
+        
+        # i want the explanation of this layer
+        # for GradCam
+        self.h = x.register_hook(self.activations_hook)
+        
+        # decoder
+    
         return x
     
     def get_act_grad(self):
