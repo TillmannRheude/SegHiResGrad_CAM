@@ -3,6 +3,7 @@
   <a href="https://github.com">
     <img src="readme_images/IGD.jpg" alt="Logo" width="330" height="92">
   </a>
+  <br />
   <a href="https://github.com">
     <img src="readme_images/TUDA.png" alt="Logo" width="300" height="124">
   </a>
