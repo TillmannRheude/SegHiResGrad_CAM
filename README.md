@@ -27,11 +27,8 @@
 </div>
 
 
-# Abstract
-....
-
-
-# Installation
+# Data and Model Preparation
+Please structure the data and model as follows:
 ...
 
 # Citation
