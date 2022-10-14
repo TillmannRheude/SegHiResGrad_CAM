@@ -22,6 +22,10 @@
   <a href="https://github.com">
     <img src="readme_images/tuda_igd.png" alt="Logo" width="376" height="77">
   </a>
+  
+  <a href="https://github.com">
+    <img src="readme_images/demo_pic.png" alt="Demo" width="436" height="182">
+  </a>
 </div>
 
 
