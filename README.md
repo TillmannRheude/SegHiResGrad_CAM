@@ -8,7 +8,7 @@
 
   <h3 align="center">Seg-HiRes-Grad CAM</h3>
 
-  <p align="center">
+  <p align="justify">
     CNNs achieve prevailing results in segmentation tasks nowadays and represent the state-of-the-art for image-based analysis. However, the understanding of their 
     accurate decision-making process is rather unknown. Besides only one method for segmentation-based interpretation of CNNs with the visualization of CAMs, no
     further and more modern methods exist in contrast to classification-based interpretation methods. Our method improves the previously-mentioned existing 
@@ -23,6 +23,10 @@
     <a href="https://github.com/">Demo</a>
   </p>
 </div>
+
+
+# Requirements
+Python 3.9.12, PyTorch 1.11.0, NumPy 1.21.5, Image PIL, torchvision 0.12.0
 
 
 # Data and Model Preparation
