@@ -18,18 +18,34 @@
     Especially for medical image segmentation, this transfer solves explainability disadvantages of Seg-Grad CAM.
     <br />
     <br />
-    <a href="https://github.com/">View Demo</a>
+    <a href="https://github.com/">Paper</a>
     ·
-    <a href="https://github.com/">Report Bug</a>
-    ·
-    <a href="https://github.com/">Request Feature</a>
+    <a href="https://github.com/">Demo</a>
   </p>
 </div>
 
 
 # Data and Model Preparation
-Please structure the data and model as follows:
-...
+Please structure the data and model as the folders in this repository, e.g. as follows:
+```bash
+├──data 
+    ├──dataset_1 (e.g. cityscapes)
+          ├──test
+              ├──images
+                  ├──files.png
+              ├──masks
+                  ├──files.png
+    ├──dataset_2
+          ├──...
+├──results 
+    ├──modelname (e.g. vanilla_unert)
+          ├──models
+              ├──dataset_1 (e.g. cityscapes)
+                  ├──modelfile
+    ├──modelname
+          ├──...
+``` 
+
 
 # Citation
 Please cite the work with the following information (bibtex format):
