@@ -1,7 +1,7 @@
 <br />
 <div align="center">
   <a href="https://github.com">
-    <img src="readme_images/IGD.png" alt="Logo" width="300" height="124">
+    <img src="readme_images/IGD.jpg" alt="Logo" width="330" height="92">
   </a>
   <a href="https://github.com">
     <img src="readme_images/TUDA.png" alt="Logo" width="300" height="124">
