@@ -97,6 +97,11 @@ class Vanilla_UNet_2d(nn.Module):
 
 To run Seg(-HiRes)-Grad CAM, the ```main.py``` file provides the relevant arguments. 
 
+# References
+Kira Vinogradova, Alexandr Dibrov, et al. “Towards Interpretable Semantic Segmentation via Gradient-Weighted Class Activation Mapping (Student Abstract)”. In: vol. 34.10. Apr. 2020, pp. 13943–13944. DOI: 10.1609/aaai.v34i10.7244.
+
+Marius Cordts, Mohamed Omran, et al. “The Cityscapes Dataset for Semantic Urban Scene Understanding”. In: 2016 IEEE Conference on Computer Vision and Pattern Recognition, CVPR 2016, Las Vegas, NV, USA, June 27-30, 2016. IEEE Computer Society, 2016, pp. 3213–3223. DOI: 10.1109/CVPR.2016.350.
+
 # Citation
 Please cite the work with the following information (bibtex format):
 ...
