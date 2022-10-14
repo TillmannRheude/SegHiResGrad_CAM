@@ -16,6 +16,9 @@
     segmentation-based methods for more detailed, explainable, and consistent results. The resulting Seg-HiRes-Grad CAM is an extension of the segmentation-based 
     Seg-Grad CAM with the transfer of the classification-based HiRes CAM. This produces explainable heatmaps which show salient pixels in semantic segmentation tasks. 
     Especially for medical image segmentation, this transfer solves explainability disadvantages of Seg-Grad CAM.
+  </p>
+  
+  <p align="center">
     <br />
     <br />
     <a href="https://github.com/">Paper</a>
