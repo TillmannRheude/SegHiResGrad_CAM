@@ -1,12 +1,14 @@
 <br />
 <div align="center">
+  
   <a href="https://github.com">
-    <img src="readme_images/IGD.jpg" alt="Logo" width="330" height="92">
+    <img src="readme_images/TUDA.png" alt="Logo" width="150" height="62">
   </a>
   <br />
   <a href="https://github.com">
-    <img src="readme_images/TUDA.png" alt="Logo" width="300" height="124">
+    <img src="readme_images/IGD.jpg" alt="Logo" width="165" height="46">
   </a>
+  
 
   <h3 align="center">Seg-HiRes-Grad CAM</h3>
 
