@@ -1,0 +1,4 @@
+/.flake8
+/.isort.cfg
+/.pre-commit-config.yaml
+!.gitignore
