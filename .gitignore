@@ -24,4 +24,11 @@ predictions/
 scripts/
 vscode/
 __pycache__
+blocks.py
+dataloader.py
+main.py
+metrics.py
+networks.py
+train_model.py
+utils.py
 !.gitignore
