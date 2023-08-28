@@ -16,8 +16,8 @@ from utils import (
 # *------------------------------------------------------------------ Arguments --------------------------------------------------------------------*
 parser = ArgumentParser()
 
-parser.add_argument("--dataset_name", type=str, default="cityscapes")
-parser.add_argument("--test_path", type=str, default="data/cityscapes/test/")
+parser.add_argument("--dataset_name", type=str, default="kits23") # 
+parser.add_argument("--test_path", type=str, default="data/kits23/test/")
 
 parser.add_argument(
     "--color",
@@ -28,14 +28,15 @@ parser.add_argument(
 parser.add_argument(
     "--amount_classes",
     type=int,
-    default=34,  # 33 for opg, 17 for word, 2 for binary, 34 for cityscapes
+    default=4,  # 33 for opg, 17 for word, 2 for binary, 34 for cityscapes
     help="Only needed for mutliple class segmentation. Number of classes + Background (e.g. 4 classes + Background = 5).",
 )
 
-parser.add_argument("--resize", type=int, default=(512, 1024))  # height, width
+parser.add_argument("--resize", type=int, default=(512, 512))  # height, width
 # opg multiclass: 560, 992
 # word multiclass: 70, 102
 # cityscapes: 512, 1024
+# kits: 512, 512
 
 # Model choice
 parser.add_argument(
@@ -44,7 +45,7 @@ parser.add_argument(
 parser.add_argument(
     "--encoder_depth",
     type=int,
-    default=5,
+    default=4,
     help="possible values up to 5. Depth 1 = [1, 64] for the encoder. Depth 2 = [1, 64, 128]. And so on.",
 )
 
@@ -54,6 +55,12 @@ parser.add_argument(
     type=str,
     default="gradcam",
     help="Decide whether to use Seg-Grad CAM (gradcam) or Seg-HiRes-Grad CAM (hirescam).",
+)
+parser.add_argument(
+    "--level",
+    type=int,
+    default="4",
+    help="Decide which layer to use for CAM.",
 )
 parser.add_argument(
     "--px_set",
@@ -102,7 +109,7 @@ classes = "multiclass" if args.amount_classes != 1 else "binary"
 
 # Set encoder and decoder values
 encoder_channels, decoder_channels = set_encoder_decoder(
-    color=args.color, amount_classes=args.amount_classes, depth=5
+    color=args.color, amount_classes=args.amount_classes, depth=args.encoder_depth
 )
 
 # Create the model
@@ -145,4 +152,4 @@ if __name__ == "__main__":
         path_save_folder_grad_cam=path_save_folder_grad_cam,
     )
 
-    Model_Class.inference(cam=True)
+    Model_Class.inference(cam=True, cam_level=args.level)

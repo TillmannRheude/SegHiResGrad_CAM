@@ -5,24 +5,9 @@
   <h3 align="center">Seg-HiRes-Grad CAM</h3>
 
   <p align="justify">
-    CNNs achieve prevailing results in segmentation tasks nowadays and represent the state-of-the-art for image-based analysis. However, the understanding of their 
-    accurate decision-making process is rather unknown. Besides only one method for segmentation-based interpretation of CNNs with the visualization of CAMs, no
-    further and more modern methods exist in contrast to classification-based interpretation methods. Our method improves the previously-mentioned existing 
-    segmentation-based method by adjusting it to recently published classification-based methods. We propose a transfer between existing classification- and 
-    segmentation-based methods for more detailed, explainable, and consistent results. The resulting Seg-HiRes-Grad CAM is an extension of the segmentation-based 
-    Seg-Grad CAM with the transfer of the classification-based HiRes CAM. This produces explainable heatmaps which show salient pixels in semantic segmentation tasks. 
-    Especially for medical image segmentation, this transfer solves explainability disadvantages of Seg-Grad CAM.
+    Convolutional neural networks (CNNs) achieve prevailing results in segmentation tasks nowadays and represent the state-of-the-art for image-based analysis. However, the understanding of the accurate decision-making process of a CNN is rather unknown. The research area of explainable artificial intelligence (xAI) primarily revolves around understanding and interpreting this black-box behavior. One way of interpreting a CNN is the use of class activation maps (CAMs) that represent heatmaps to indicate the importance of image areas for the prediction of the CNN. For classification tasks, a variety of CAM algorithms exist. But for segmentation tasks, only one CAM algorithm for the interpretation of the output of a CNN exist. We propose a transfer between existing classification- and segmentation-based methods for more detailed, explainable, and consistent results which show salient pixels in semantic segmentation tasks. The resulting Seg-HiRes-Grad CAM is an extension of the segmentation-based Seg-Grad CAM with the transfer to the classification-based HiRes CAM. Our method improves the previously-mentioned existing segmentation-based method by adjusting it to recently published classification-based methods. Especially for medical image segmentation, this transfer solves existing explainability disadvantages.  
   </p>
   
-  <p align="center">
-    <br />
-    <a href="https://github.com/">Paper</a>
-  </p>
-  
-  <a href="https://github.com">
-    <img src="readme_images/tuda_igd.png" alt="Logo" width="376" height="77">
-  </a>
-  <br />
   <a href="https://github.com">
     <img src="readme_images/demo_pic.PNG" alt="Demo" width="872" height="364">
   </a>

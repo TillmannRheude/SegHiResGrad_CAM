@@ -69,6 +69,8 @@ class Dataset_2d(Dataset):
         self.img_extension = "jpg"
         if "cityscapes" in self.dir_root:
             self.img_extension = "png"
+        if "kits23" in self.dir_root:
+            self.img_extension = "png"
         self.mask_extension = "png"
 
         # further assignments
@@ -166,6 +168,13 @@ class Dataset_2d(Dataset):
                 0.1255,
                 0.1294,
             ]
+        elif "kits23" in self.dir_root: 
+            class_labels = [
+                0.,
+                0.0039,
+                0.0078,
+                0.0118
+            ]
         else:
             class_labels = [0, 0, 0]
             print("Warning: Class labels not defined.")
@@ -216,7 +225,7 @@ class Dataset_2d(Dataset):
             for class_label_int, class_label in enumerate(class_labels):
                 # change float labels to 0, 1, ... nClasses-1 (integer) labels
                 mask[torch.round(mask, decimals=4) == class_label] = class_label_int
-
+            
             if torch.max(image) != 1:
                 min_val = torch.min(image)
                 max_val = torch.max(image)

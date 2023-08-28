@@ -15,7 +15,7 @@ parser = ArgumentParser()
 parser.add_argument(
     "--dataset_name",
     type=str,
-    default="cityscapes",
+    default="kits23",
     help="Name of the dataset which should be equal to the folder name in the folder <data>.",
 )
 # 2D: opg_binary, opg_color_binary, opg_multiclass, frs_binary, cityscapes
@@ -38,14 +38,14 @@ parser.add_argument(
 parser.add_argument(
     "--color",
     type=str,
-    default="rgb",
+    default="grey",
     help="Color of the input images. Possible values: grey (greyscale) and rgb (colored).",
 )
 
 parser.add_argument(
     "--amount_classes",
     type=int,
-    default=34,
+    default=4,
     help="Number of classes + Background (e.g. 4 classes + Background = 5). For binary: 1.",
 )
 # 33 for opg, 11 for crs, 17 for word, 34 for cityscapes
@@ -53,7 +53,7 @@ parser.add_argument(
 parser.add_argument(
     "--resize",
     type=int,
-    default=(512, 1024),
+    default=(512, 512),
     help="Size for the input images. Depending on the trained network parameters. Format: (height, width)",
 )
 # opg_binary/multiclass: 560, 992
@@ -62,6 +62,8 @@ parser.add_argument(
 # crs: 100, 100
 # word: 70, 102
 # cityscapes: 1024 x 2048 -> 512, 1024
+# ham (450, 600),
+# kits (512, 512)
 
 parser.add_argument(
     "--aug_prob", type=int, default=0.0, help="Augmentation probability."
@@ -73,11 +75,11 @@ parser.add_argument(
     "--model",
     type=str,
     default="vanilla_unet",
-    help="Choose the model. Possible values: vanilla_unet, attention_unet, shift_unet",
+    help="Choose the model. Possible values: vanilla_unet",
 )
 
 parser.add_argument(
-    "--learning_rate", type=float, default=3e-3, help="Choose the learning rate."
+    "--learning_rate", type=float, default=3e-4, help="Choose the learning rate."
 )
 # 3e-3 for 2D
 # 3e-3 for 3D  1e-2 3d Shift
@@ -126,8 +128,8 @@ transform_resize = {"resize": args.resize}
 base_path = f"{args.dataset_path}{args.dataset_name}/"
 train_path, validation_path, test_path = (
     f"{base_path}train/",
-    f"{base_path}train/",
-    f"{base_path}train/",
+    f"{base_path}validation/",
+    f"{base_path}test/",
 )
 classes = "multiclass" if args.amount_classes != 1 else "binary"
 # Set Data Loaders for train, val and test
@@ -146,6 +148,7 @@ validation_loader = build_dataloader(
     transform={**transform_resize},
     num_workers=args.num_workers,
     batch_size=1,
+    return_filenames=True,
     shuffle=False,
     dataset_color=args.color,
     classes=classes,

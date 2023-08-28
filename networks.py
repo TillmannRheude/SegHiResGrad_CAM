@@ -121,31 +121,43 @@ class Vanilla_UNet_2d(nn.Module):
         # for GradCam
         self.gradients = grad
 
-    def forward(self, x):
+    def forward(self, x, cam_level):
         # *----------------------------------------------- Encoder -----------------------------------------------*
         encoded_values = []
         for i, block in enumerate(self.encoder):
             # send the tensor to the encoder block and get the encoded tensor before and after the max pooling operation
             x_pre_pool, x_post_pool = block(x)
+            if i == 0 and cam_level == 0 and self.grad_cam:
+                self.h = x_pre_pool.register_hook(self.activations_hook)
+            if i == 1 and cam_level == 1 and self.grad_cam:
+                self.h = x_pre_pool.register_hook(self.activations_hook)
+            if i == 2 and cam_level == 2 and self.grad_cam:
+                self.h = x_pre_pool.register_hook(self.activations_hook)
+            # for depth 5:
+            #if i == 3 and cam_level == 3 and self.grad_cam:
+            #    self.h = x_pre_pool.register_hook(self.activations_hook)
+
             # save the encoded tensor before the max pooling operation for the skip connection part later
             encoded_values.append(x_pre_pool)
-            if i == 4: 
+            if i == 4:
                 pass
             x = x_post_pool
         x = x_pre_pool
+        if cam_level == 4 and self.grad_cam:
+            self.h = x_pre_pool.register_hook(self.activations_hook)
 
         # delete the last skip connection tensor
         encoded_values = encoded_values[:-1]
 
         # for GradCam
-        if self.grad_cam:
-            self.h = x_pre_pool.register_hook(self.activations_hook)
+        #if self.grad_cam and cam_level == 6:
+        #    self.h = x_pre_pool.register_hook(self.activations_hook)
 
         # *----------------------------------------------- Decoder -----------------------------------------------*
         # first upconvolution in the decoder path
         x = self.upconv(x)
 
-        for block in self.decoder:
+        for i, block in enumerate(self.decoder):
             # get the encoded value from the encoder path
             encoded_value = encoded_values.pop()
             # pad the decoding value to the necessary shape
@@ -154,6 +166,14 @@ class Vanilla_UNet_2d(nn.Module):
             x = torch.cat([decoding_value_padded, encoded_value], dim=1)
             # send the final concatenated tensor to the decoder block
             x = block(x)
+            if i == 0 and cam_level == 5 and self.grad_cam:
+                self.h = x.register_hook(self.activations_hook)
+            if i == 1 and cam_level == 6 and self.grad_cam:
+                self.h = x.register_hook(self.activations_hook)
+            # for depth level 5: 
+            #if i == 2 and cam_level == 7 and self.grad_cam:
+            #    self.h = x.register_hook(self.activations_hook)
+
 
         # *-------------------------------------------- Final Layer ----------------------------------------------*
         # get the encoded value from the encoder path
@@ -163,10 +183,11 @@ class Vanilla_UNet_2d(nn.Module):
         # concatenate the tensors
         x = torch.cat([x_padded, encoded_value], dim=1)
 
-
         # send the final concatenated tensor to the final layer block
-        for block in self.final_layer:
+        for i, block in enumerate(self.final_layer):
             x = block(x)
+            if i == 1 and cam_level == 8 and self.grad_cam:
+                self.h = x.register_hook(self.activations_hook)
         
         # *------------------------------------- Activation Function --------------------------------------------*
         if self.decoder_channels[-1] == 1:  # case of binary segmentation
@@ -178,7 +199,8 @@ class Vanilla_UNet_2d(nn.Module):
         # for GradCam
         return self.gradients
 
-    def get_act(self, x):
+    def get_act(self, x, cam_level):
+        """ 
         # for GradCam
         for i, block in enumerate(self.encoder):
             # send the tensor to the encoder block and get the encoded tensor before and after the max pooling operation
@@ -188,5 +210,72 @@ class Vanilla_UNet_2d(nn.Module):
                 pass
             x = x_post_pool
         x = x_pre_pool
+        """
 
-        return x
+        # for GradCam
+        encoded_values = []
+        for i, block in enumerate(self.encoder):
+            # send the tensor to the encoder block and get the encoded tensor before and after the max pooling operation
+            x_pre_pool, x_post_pool = block(x)
+            if i == 0 and cam_level == 0 and self.grad_cam:
+                return x_pre_pool
+            if i == 1 and cam_level == 1 and self.grad_cam:
+                return x_pre_pool
+            if i == 2 and cam_level == 2 and self.grad_cam:
+                return x_pre_pool
+            if i == 3 and cam_level == 3 and self.grad_cam:
+                return x_pre_pool
+            #if i == 4 and cam_level == 4 and self.grad_cam:
+            #    return x_pre_pool
+            # save the encoded tensor before the max pooling operation for the skip connection part later
+            encoded_values.append(x_pre_pool)
+            if i == 4:
+                pass
+            x = x_post_pool
+        x = x_pre_pool
+
+        if cam_level == 4 and self.grad_cam:
+            return x_pre_pool
+
+        # delete the last skip connection tensor
+        encoded_values = encoded_values[:-1]
+
+        # for GradCam
+        #if self.grad_cam and cam_level == 6:
+        #    self.h = x_pre_pool.register_hook(self.activations_hook)
+
+        # *----------------------------------------------- Decoder -----------------------------------------------*
+        # first upconvolution in the decoder path
+        x = self.upconv(x)
+
+        for i, block in enumerate(self.decoder):
+            # get the encoded value from the encoder path
+            encoded_value = encoded_values.pop()
+            # pad the decoding value to the necessary shape
+            decoding_value_padded = self.pad_tensor(encoded_value, x)
+            # concatenate the tensors
+            x = torch.cat([decoding_value_padded, encoded_value], dim=1)
+            # send the final concatenated tensor to the decoder block
+            x = block(x)
+            if i == 0 and cam_level == 5 and self.grad_cam:
+                return x
+            if i == 1 and cam_level == 6 and self.grad_cam:
+                return x
+            if i == 2 and cam_level == 7 and self.grad_cam:
+                return x
+
+         # *-------------------------------------------- Final Layer ----------------------------------------------*
+        # get the encoded value from the encoder path
+        encoded_value = encoded_values.pop()
+        # pad x to the necessary shape
+        x_padded = self.pad_tensor(tensor_with_final_shapes=encoded_value, x=x)
+        # concatenate the tensors
+        x = torch.cat([x_padded, encoded_value], dim=1)
+
+        # send the final concatenated tensor to the final layer block
+        for i, block in enumerate(self.final_layer):
+            x = block(x)
+            if i == 1 and cam_level == 8 and self.grad_cam:
+                return x
+
+        # return x

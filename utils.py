@@ -107,6 +107,8 @@ class Model_Inference:
         self.pixel_set_point = pixel_set_point
         self.show_progress = show_progress
 
+        # print(self.model.encoder_channels)
+
         if path_save_folder_grad_cam is not None:
             self.path_save_folder_grad_cam = path_save_folder_grad_cam
 
@@ -131,28 +133,33 @@ class Model_Inference:
         self.model.grad_cam = True
         self.model.to(self.device)
 
-    def predict(self, image: torch.tensor):
+    def predict(self, image: torch.tensor, cam_level: int):
         self.model.zero_grad()
         self.model.eval()
         # get the image from the loader
         image = image.to(self.device)
         # make a prediction with the model
-        prediction = self.model(image)
+        prediction = self.model(image, cam_level=cam_level)
 
         return prediction
 
-    def inference(self, cam=True):
+    def inference(self, cam_level: int, cam: bool = True):
         self.prepare_model()
 
         for i, (image, ground_truth, filenames) in enumerate(self.dataloader):
             torch.cuda.empty_cache()
             if self.show_progress:
+                if "case_00000_327" not in filenames[0]: # 290
+                    continue
+                #if "ISIC_0024598_segmentation" not in filenames[0]:
+                #    continue
                 print(
                     f"Currently at {filenames[0]} (number {i+1} out of {len(self.dataloader)+1})"
                 )
-
+            
             # do inference prediction with the model
-            prediction = self.predict(image)
+            prediction = self.predict(image, cam_level=cam_level)
+            save_test_predictions(prediction, "predictions/", filenames, "multiclass")
 
             # CAM
             if cam:
@@ -162,8 +169,10 @@ class Model_Inference:
                         prediction=prediction,
                         image=image.to(self.device),
                         filenames=filenames,
-                        backward_class=cl,
+                        backward_class=cl, 
+                        cam_level=cam_level
                     )
+                exit()
 
 
 class CAM:
@@ -234,12 +243,16 @@ class CAM:
         """
         if prediction.shape[1] > 1:
             # get the correct segmentation result via argmax because we have multiple classes in dim 1
-            segmentation = torch.argmax(prediction, dim=1)
-
+            # segmentation = torch.argmax(nn.Softmax(dim=1)(prediction), dim=1)
+            segmentation = nn.Softmax(dim=1)(prediction)
+            for class_nr in range(segmentation.shape[1]):
+                segmentation[:, class_nr, :, :] = torch.where(segmentation[:, class_nr, :, :] > 0.5, torch.tensor(class_nr).cuda(), torch.tensor(0).cuda())
+            
         # get the pixel set for a specific region/point/... (explained in SegGradCam Paper)
         if self.pixel_set == "image":
             px_set_m = torch.ones_like(segmentation).squeeze().to(self.device)
         elif self.pixel_set == "class":
+            px_set_m = segmentation[:, backward_class, :, :]
             px_set_m = (
                 torch.where(segmentation == backward_class, 1, 0)
                 .squeeze()
@@ -262,7 +275,7 @@ class CAM:
             retain_graph=True
         )
 
-    def get_activations(self, image: torch.tensor):
+    def get_activations(self, image: torch.tensor, cam_level: int):
         """Pass the model until the activation gradients are reached. The model has to be specialized for this task.
             Calculations are different depending on the cam type (seg-grad-cam or hi-res-seg-grad-cam)
 
@@ -274,15 +287,19 @@ class CAM:
             gradients = self.model.get_act_grad()
 
             pooled_gradients = torch.mean(
-                gradients, dim=[0, 2, 3]
+                gradients, dim=[0, 2, 3]  # dim 2,3 and squeeze also possible
             ).detach()  # this equals alpha_c^k
 
+            pooled_gradients *= 1000
+
             # Get the activations
-            self.activations = self.model.get_act(image).detach()
+            self.activations = self.model.get_act(image, cam_level=cam_level).detach()
 
             # Multiply activations with pooled gradients
             for act in range(self.activations.shape[1]):
                 self.activations[:, act, :, :] *= pooled_gradients[act]
+            # faster: 
+            # self.activations = self.activations * pooled_gradients.view(1, 64, 1, 1)
 
         if self.cam_type == "hirescam":
             # Get the gradients and do not pool them (in contrast to gradcam)
@@ -290,10 +307,10 @@ class CAM:
             not_pooled_gradients = gradients.detach()  # HiResCAM
 
             # Get the activations
-            self.activations = self.model.get_act(image).detach()
+            self.activations = self.model.get_act(image, cam_level=cam_level).detach()
 
             # Multiply activations with pooled gradients
-            print(self.activations.shape, not_pooled_gradients.shape)
+            # print(self.activations.shape, not_pooled_gradients.shape)
             self.activations[:, :, :, :] *= not_pooled_gradients
 
     def get_heatmap(self, image: torch.tensor):
@@ -306,12 +323,16 @@ class CAM:
             # Create a heatmap out of the new activations
             heatmap = torch.sum(
                 self.activations, dim=1
-            ).squeeze()  # sum_k in L^c = ReLU(...)
-            heatmap = np.maximum(heatmap.cpu(), 0)  # ReLU in L^c = ReLU(...)
-            heatmap /= torch.max(
-                heatmap
-            ).squeeze()  # 35, 62, normalization for the heatmap visualization
+            ) # sum_k in L^c = ReLU(...)
+    
+            #heatmap = np.maximum(heatmap.cpu()).squeeze()   # ReLU in L^c = ReLU(...)
+            heatmap = nn.ReLU()(heatmap).squeeze().cpu()
 
+            if torch.max(heatmap) != 0:
+                heatmap /= torch.max(
+                    heatmap
+                ).squeeze()  # 35, 62, normalization for the heatmap visualization
+            
             # Get the original image and "convert" it to RGB
             img = image.cpu().detach().squeeze()
 
@@ -323,7 +344,7 @@ class CAM:
                 img = img.unsqueeze(2).repeat(1, 1, 3).numpy() / 3  # (512, 1024, 3)
 
             # Resize the heatmap to the size of the image
-            heatmap = cv2.resize(np.asarray(heatmap), (img.shape[1], img.shape[0]))
+            heatmap = cv2.resize(np.asarray(heatmap), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_LINEAR)
             heatmap = np.uint8(255 * heatmap)
             heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
 
@@ -331,7 +352,7 @@ class CAM:
         else:
             print("Err: Wrong image dimensions")
 
-    def save_heatmap(self, filenames: list, backward_class: int):
+    def save_heatmap(self, filenames: list, backward_class: int, cam_level: int):
         """Save function for the heatmap images
 
         Args:
@@ -340,7 +361,9 @@ class CAM:
         """
         new_filename = filenames[0].replace(".png", f"_cam_{backward_class}.png")
         # create save path
-        save_path = f"{self.path_save_folder_grad_cam}{new_filename}"
+        root_path = f"{self.path_save_folder_grad_cam}level_{cam_level}/"
+        os.makedirs(f"{self.path_save_folder_grad_cam}level_{cam_level}/", exist_ok=True)
+        save_path = f"{root_path}{new_filename}"  # self.path_save_folder_grad_cam
         cv2.imwrite(save_path, self.final_heatmap)
 
     def inference_cam(
@@ -349,6 +372,7 @@ class CAM:
         image: torch.tensor,
         filenames: list,
         backward_class: int,
+        cam_level: int
     ):
         """Do the whole inference for the CAM-method.
 
@@ -361,11 +385,11 @@ class CAM:
 
         self.backward_cam(prediction=prediction, backward_class=backward_class)
 
-        self.get_activations(image=image)
+        self.get_activations(image=image, cam_level=cam_level)
 
         self.get_heatmap(image=image)
 
-        self.save_heatmap(filenames=filenames, backward_class=backward_class)
+        self.save_heatmap(filenames=filenames, backward_class=backward_class, cam_level=cam_level)
 
 
 #################################################################################################################################
@@ -398,7 +422,8 @@ class Model(object):
         self.classes = classes
         self.batch_size = batch_size
 
-        self.path_model = path_model
+        self.path_model = path_model.replace("_2d", "")
+        os.makedirs(f"{self.path_model}{self.dataset_name}", exist_ok=True)
 
         self.modelname = modelname
         self.learning_rate = learning_rate
@@ -413,13 +438,13 @@ class Model(object):
 
         # Set encoder channels
         if self.dim == "2d":
-            self.encoder_channels = [input_color_channels, 64, 128, 256, 512, 1024]
+            self.encoder_channels = [input_color_channels, 64, 128, 256, 512] # ,1024
         if self.dim == "3d":
             self.encoder_channels = [input_color_channels, 64, 128, 256, 512, 1024]
 
         # Set decoder channels
         if self.dim == "2d":
-            self.decoder_channels = [1024, 512, 256, 128, 64, self.classes]
+            self.decoder_channels = [512, 256, 128, 64, self.classes] # 1024, 
         if self.dim == "3d":
             self.decoder_channels = [1024, 512, 256, 128, 64, self.classes]
 
@@ -522,7 +547,7 @@ class Model(object):
                 ground_truth = ground_truth.to(self.device)
 
                 # get model prediction
-                segmentation = self.model(image)
+                segmentation = self.model(image, cam_level=None)
 
                 if self.nr_classes == "multiclass":
                     ground_truth = ground_truth.squeeze(dim=1)
@@ -583,14 +608,18 @@ class Model(object):
 
             epoch_loss_val = 0
 
+            filename_list = []
+            f1_list = []
+            iou_list = []
+
             self.model.eval()
-            for i, (image, ground_truth) in enumerate(self.validation_loader):
+            for i, (image, ground_truth, filenames) in enumerate(self.validation_loader):
                 # Move image and GT to device
                 image = image.to(self.device)
                 ground_truth = ground_truth.to(self.device)
 
                 with torch.no_grad():
-                    segmentation = self.model(image)
+                    segmentation = self.model(image, cam_level=None)
 
                 # calculate loss
                 with torch.no_grad():
@@ -625,6 +654,10 @@ class Model(object):
                 f1 += f1_score(ground_truth, segmentation, nr_classes=self.classes)
                 iou += iou_score(ground_truth, segmentation, nr_classes=self.classes)
 
+                f1_list.append(f1_score(ground_truth, segmentation, nr_classes=self.classes))
+                iou_list.append(iou_score(ground_truth, segmentation, nr_classes=self.classes))
+                filename_list.append(filenames)
+
             f1 = f1 / len(self.validation_loader)
             iou = iou / len(self.validation_loader)
             epoch_loss_val = epoch_loss_val / len(self.validation_loader)
@@ -636,6 +669,9 @@ class Model(object):
                 )
             )
             new_model_summary_score = f1 + iou
+
+            self.save_metrics_to_csv(f1, iou)
+            self.save_image_metrics_to_csv(filename_list, f1_list, iou_list)
             # If the new score is better than the last score, save the model.
             if new_model_summary_score > self.model_summary_score:
                 self.model_summary_score = new_model_summary_score
@@ -680,7 +716,7 @@ class Model(object):
                 ground_truth = ground_truth.to(self.device)
 
                 with torch.no_grad():
-                    segmentation = self.model(image)
+                    segmentation = self.model(image, cam_level=None)
                     if self.nr_classes == "multiclass":  # and (self.dim == "2d")
                         ground_truth = ground_truth.squeeze(dim=1)
                         ground_truth = ground_truth.long()
@@ -731,8 +767,8 @@ class Model(object):
             f1 = f1 / len(self.test_loader)
             iou = iou / len(self.test_loader)
 
-            self.save_metrics_to_csv(f1, iou)
-            self.save_image_metrics_to_csv(filename_list, f1_list, iou_list)
+            #self.save_metrics_to_csv(f1, iou)
+            #self.save_image_metrics_to_csv(filename_list, f1_list, iou_list)
 
             # Print validation information such as metrics, etc.
             print(
@@ -745,8 +781,7 @@ def save_test_predictions(
     predictions: torch.tensor,
     save_root: str,
     filenames: list,
-    nr_classes: str = "binary",
-):
+    nr_classes: str = "binary"):
     # predictions e.g. shape [1, 1, 128, 128] - B, C, H, W
     batchsize = predictions.shape[0]
 
