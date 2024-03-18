@@ -81,8 +81,7 @@ class Vanilla_UNet_2d(nn.Module):
         return x 
 ``` 
 
-To run Seg(-HiRes)-Grad CAM, the ```main.py``` file provides the relevant arguments. Alternatively, one could implement (Seg-HiRes-)Grad CAM by using PyTorch's <a href="[url](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)">hooks</a>.
-
+To run Seg(-HiRes)-Grad CAM, the ```main.py``` file provides the relevant arguments. Alternatively, one could implement (Seg-HiRes-)Grad CAM by using PyTorch's [hooks]([https://www.google.com](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)).
 
 
 # References
