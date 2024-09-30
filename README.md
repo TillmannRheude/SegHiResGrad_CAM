@@ -93,6 +93,7 @@ N. Heller et al., “The state of the art in kidney and kidney tumor segmentatio
 
 # Citation
 Please cite the work with the following information (bibtex format):
+```bash
 @article{melba:2024:023:rheude,
     title = "Leveraging CAM Algorithms for Explaining Medical Semantic Segmentation",
     author = "Rheude, Tillmann and Wirtz, Andreas and Kuijper, Arjan and Wesarg, Stefan",
@@ -105,3 +106,4 @@ Please cite the work with the following information (bibtex format):
     doi = "https://doi.org/10.59275/j.melba.2024-ebd3",
     url = "https://melba-journal.org/2024:023"
 }
+``` 
