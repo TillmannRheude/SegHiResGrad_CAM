@@ -93,4 +93,15 @@ N. Heller et al., “The state of the art in kidney and kidney tumor segmentatio
 
 # Citation
 Please cite the work with the following information (bibtex format):
-...
+@article{melba:2024:023:rheude,
+    title = "Leveraging CAM Algorithms for Explaining Medical Semantic Segmentation",
+    author = "Rheude, Tillmann and Wirtz, Andreas and Kuijper, Arjan and Wesarg, Stefan",
+    journal = "Machine Learning for Biomedical Imaging",
+    volume = "2",
+    issue = "iMIMIC 2023 special issue",
+    year = "2024",
+    pages = "2089--2102",
+    issn = "2766-905X",
+    doi = "https://doi.org/10.59275/j.melba.2024-ebd3",
+    url = "https://melba-journal.org/2024:023"
+}
